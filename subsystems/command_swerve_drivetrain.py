@@ -3,9 +3,14 @@ from commands2.sysid import SysIdRoutine
 import math
 from phoenix6 import SignalLogger, swerve, units, utils
 from typing import Callable, overload
-from wpilib import DriverStation, Notifier, RobotController
+from wpilib import DriverStation, Notifier, RobotController, reportError
 from wpilib.sysid import SysIdRoutineLog
-from wpimath.geometry import Rotation2d
+from wpimath.geometry import Rotation2d, Pose2d, Translation2d
+from wpimath.units import degreesToRadians
+from wpimath.kinematics import ChassisSpeeds
+from pathplannerlib.auto import AutoBuilder
+from Constants.auto_constants import AutoConstants
+# from generated.tuner_constants import TunerConstants
 
 
 class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
@@ -30,6 +35,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         drivetrain_constants: swerve.SwerveDrivetrainConstants,
         modules: list[swerve.SwerveModuleConstants],
     ) -> None:
+        # self.autoBuilderConfigure()
         """
         Constructs a CTRE SwerveDrivetrain using the specified constants.
 
@@ -60,6 +66,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         odometry_update_frequency: units.hertz,
         modules: list[swerve.SwerveModuleConstants],
     ) -> None:
+        # self.autoBuilderConfigure()
         """
         Constructs a CTRE SwerveDrivetrain using the specified constants.
 
@@ -96,6 +103,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         vision_standard_deviation: tuple[float, float, float],
         modules: list[swerve.SwerveModuleConstants],
     ) -> None:
+        # self.autoBuilderConfigure()
         """
         Constructs a CTRE SwerveDrivetrain using the specified constants.
 
@@ -144,7 +152,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
             self, drive_motor_type, steer_motor_type, encoder_type,
             drivetrain_constants, arg0, arg1, arg2, arg3
         )
-
+        # self.autoBuilderConfigure()
         self._sim_notifier: Notifier | None = None
         self._last_sim_time: units.second = 0.0
 
@@ -298,3 +306,21 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         self._last_sim_time = utils.get_current_time_seconds()
         self._sim_notifier = Notifier(_sim_periodic)
         self._sim_notifier.startPeriodic(self._SIM_LOOP_PERIOD)
+
+    def getPigeonRotation2d(self)->Rotation2d:
+        return Rotation2d(degreesToRadians(self.pigeon2.get_yaw().value))
+    
+    def autoBuilderConfigure(self):
+            AutoBuilder.configure(
+                self.get_state().pose,
+                self.seed_field_centric(),
+                self.get_state().speeds,
+                self.set_control(swerve.requests.ApplyRobotSpeeds().with_speeds(self.get_state().speeds)),
+                AutoConstants.holonomicPathConfig,
+                AutoConstants.robot_config,
+                self.flip(),
+                self
+            )
+    
+    def flip(self):
+        return DriverStation.getAlliance() == DriverStation.Alliance.kRed

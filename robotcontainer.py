@@ -8,14 +8,21 @@ import commands2
 import commands2.button
 import commands2.cmd
 from commands2.sysid import SysIdRoutine
+from commands2.instantcommand import InstantCommand
+from commands2.command import Command
 
 from generated.tuner_constants import TunerConstants
 from telemetry import Telemetry
 
 from phoenix6 import swerve
-from wpimath.geometry import Rotation2d
+from wpimath.geometry import Rotation2d, Pose2d
 from wpimath.units import rotationsToRadians
+from wpilib import Joystick, RobotBase, SmartDashboard
+from wpilib.shuffleboard import Shuffleboard
 
+from pathplannerlib.auto import AutoBuilder
+
+from subsystems.command_swerve_drivetrain import CommandSwerveDrivetrain
 
 class RobotContainer:
     """
@@ -26,19 +33,20 @@ class RobotContainer:
     """
 
     def __init__(self) -> None:
+
         self._max_speed = (
             TunerConstants.speed_at_12_volts
         )  # speed_at_12_volts desired top speed
         self._max_angular_rate = rotationsToRadians(
-            0.75
+            0.85
         )  # 3/4 of a rotation per second max angular velocity
 
         # Setting up bindings for necessary control of the swerve drive platform
         self._drive = (
             swerve.requests.FieldCentric()
-            .with_deadband(self._max_speed * 0.1)
+            .with_deadband(self._max_speed * 0.2)
             .with_rotational_deadband(
-                self._max_angular_rate * 0.1
+                self._max_angular_rate * 0.2
             )  # Add a 10% deadband
             .with_drive_request_type(
                 swerve.SwerveModule.DriveRequestType.OPEN_LOOP_VOLTAGE
@@ -52,9 +60,12 @@ class RobotContainer:
         self._joystick = commands2.button.CommandXboxController(0)
 
         self.drivetrain = TunerConstants.create_drivetrain()
-
         # Configure the button bindings
+
+        # self.autoChooser = AutoBuilder.buildAutoChooser("None")
+        # SmartDashboard.putData("AutoChooser",self.autoChooser)
         self.configureButtonBindings()
+
 
     def configureButtonBindings(self) -> None:
         """
@@ -65,18 +76,22 @@ class RobotContainer:
 
         # Note that X is defined as forward according to WPILib convention,
         # and Y is defined as to the left according to WPILib convention.
+        if RobotBase.isSimulation():
+            negative_value = 1
+        else:
+            negative_value=-1
         self.drivetrain.setDefaultCommand(
             # Drivetrain will execute this command periodically
             self.drivetrain.apply_request(
                 lambda: (
                     self._drive.with_velocity_x(
-                        -self._joystick.getLeftY() * self._max_speed
+                        negative_value*self._joystick.getLeftY() * self._max_speed
                     )  # Drive forward with negative Y (forward)
                     .with_velocity_y(
-                        -self._joystick.getLeftX() * self._max_speed
+                        negative_value*self._joystick.getLeftX() * self._max_speed
                     )  # Drive left with negative X (left)
                     .with_rotational_rate(
-                        -self._joystick.getRightX() * self._max_angular_rate
+                        negative_value*self._joystick.getRightX() * self._max_angular_rate
                     )  # Drive counterclockwise with negative X (left)
                 )
             )
@@ -90,7 +105,9 @@ class RobotContainer:
                 )
             )
         )
-
+        self._joystick.rightBumper().onTrue(self.drivetrain.runOnce(lambda: self.drivetrain.set_operator_perspective_forward(-self.drivetrain.getPigeonRotation2d())))
+        self._joystick.leftTrigger().whileTrue(self.drivetrain.run(lambda: self.drivetrain.pigeon2.set_yaw(-55)))
+        # self._joystick.rightBumper().onTrue(InstantCommand(lambda: self.drivetrain.zeroPigeon()))
         # Run SysId routines when holding back/start and X/Y.
         # Note that each routine should be run exactly once in a single log.
         (self._joystick.back() & self._joystick.y()).whileTrue(
@@ -115,9 +132,14 @@ class RobotContainer:
             lambda state: self._logger.telemeterize(state)
         )
 
-    def getAutonomousCommand(self) -> commands2.Command:
+    def getAutonomousCommand(self) -> Command:
         """Use this to pass the autonomous command to the main {@link Robot} class.
 
         :returns: the command to run in autonomous
         """
         return commands2.cmd.print_("No autonomous command configured")
+        # auto = self.autoChooser.getSelected()
+
+        # return auto
+        
+

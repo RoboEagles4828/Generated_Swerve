@@ -3,10 +3,26 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Pose": "Field2d",
+      "/Shuffleboard/Auto/AutoChooser": "String Chooser",
+      "/Shuffleboard/Auto/SendableChooser[0]": "String Chooser",
+      "/Shuffleboard/Autos/Auto Selector": "String Chooser",
+      "/SmartDashboard/AutoChooser": "String Chooser",
       "/SmartDashboard/Module 0": "Mechanism2d",
       "/SmartDashboard/Module 1": "Mechanism2d",
       "/SmartDashboard/Module 2": "Mechanism2d",
       "/SmartDashboard/Module 3": "Mechanism2d"
+    },
+    "windows": {
+      "/Shuffleboard/Autos/Auto Selector": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/AutoChooser": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables Info": {

@@ -41,7 +41,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # commands, running already-scheduled commands, removing finished or interrupted commands,
         # and running subsystem periodic() methods.  This must be called from the robot's periodic
         # block in order for anything in the Command-based framework to work.
-        # commands2.CommandScheduler.getInstance().run()
+        commands2.CommandScheduler.getInstance().run()
 
     def disabledInit(self) -> None:
         """This function is called once each time the robot enters Disabled mode."""
@@ -55,7 +55,7 @@ class MyRobot(commands2.TimedCommandRobot):
         """This autonomous runs the autonomous command selected by your RobotContainer class."""
         self.autonomousCommand = self.container.getAutonomousCommand()
 
-        if self.autonomousCommand:
+        if self.autonomousCommand!=None:
             self.autonomousCommand.schedule()
 
     def autonomousPeriodic(self) -> None:
