@@ -35,7 +35,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         drivetrain_constants: swerve.SwerveDrivetrainConstants,
         modules: list[swerve.SwerveModuleConstants],
     ) -> None:
-        # self.autoBuilderConfigure()
+        self.autoBuilderConfigure()
         """
         Constructs a CTRE SwerveDrivetrain using the specified constants.
 
@@ -66,7 +66,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         odometry_update_frequency: units.hertz,
         modules: list[swerve.SwerveModuleConstants],
     ) -> None:
-        # self.autoBuilderConfigure()
+        self.autoBuilderConfigure()
         """
         Constructs a CTRE SwerveDrivetrain using the specified constants.
 
@@ -103,7 +103,7 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
         vision_standard_deviation: tuple[float, float, float],
         modules: list[swerve.SwerveModuleConstants],
     ) -> None:
-        # self.autoBuilderConfigure()
+        self.autoBuilderConfigure()
         """
         Constructs a CTRE SwerveDrivetrain using the specified constants.
 
@@ -152,9 +152,11 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
             self, drive_motor_type, steer_motor_type, encoder_type,
             drivetrain_constants, arg0, arg1, arg2, arg3
         )
-        # self.autoBuilderConfigure()
+        self.autoBuilderConfigure()
         self._sim_notifier: Notifier | None = None
         self._last_sim_time: units.second = 0.0
+
+        self._apply_robot_speeds = swerve.requests.ApplyRobotSpeeds()
 
         self._has_applied_operator_perspective = False
         """Keep track if we've ever applied the operator perspective before or not"""
@@ -312,15 +314,23 @@ class CommandSwerveDrivetrain(Subsystem, swerve.SwerveDrivetrain):
     
     def autoBuilderConfigure(self):
             AutoBuilder.configure(
-                self.get_state().pose,
-                self.seed_field_centric(),
-                self.get_state().speeds,
-                self.set_control(swerve.requests.ApplyRobotSpeeds().with_speeds(self.get_state().speeds)),
+                lambda: self.get_state().pose,
+                self.reset_pose,
+               lambda:  self.get_state().speeds,
+                self.swerve_output,
                 AutoConstants.holonomicPathConfig,
                 AutoConstants.robot_config,
-                self.flip(),
+                self.flip,
                 self
             )
     
     def flip(self):
-        return DriverStation.getAlliance() == DriverStation.Alliance.kRed
+        return (DriverStation.getAlliance() or DriverStation.Alliance.kBlue) == DriverStation.Alliance.kRed
+    
+    def swerve_output(self, speeds, feedforwards):
+        return self.set_control(
+                self._apply_robot_speeds
+                .with_speeds(speeds)
+                .with_wheel_force_feedforwards_x(feedforwards.robotRelativeForcesXNewtons)
+                .with_wheel_force_feedforwards_y(feedforwards.robotRelativeForcesYNewtons)
+            )

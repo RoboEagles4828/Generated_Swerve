@@ -9,6 +9,8 @@ import wpilib
 import commands2
 import typing
 
+from phoenix6.signal_logger import SignalLogger
+
 from robotcontainer import RobotContainer
 
 
@@ -29,6 +31,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         # autonomous chooser on the dashboard.
         self.container = RobotContainer()
+        SignalLogger.start()
 
     def robotPeriodic(self) -> None:
         """This function is called every 20 ms, no matter the mode. Use this for items like diagnostics

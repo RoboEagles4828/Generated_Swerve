@@ -11,8 +11,8 @@
       "style": "0",
       "userScale": "2",
       "width": "1920",
-      "xpos": "119",
-      "ypos": "581"
+      "xpos": "438",
+      "ypos": "995"
     }
   },
   "Window": {
@@ -23,7 +23,7 @@
     },
     "###/SmartDashboard/AutoChooser": {
       "Collapsed": "0",
-      "Pos": "250,210",
+      "Pos": "252,211",
       "Size": "469,78"
     },
     "###FMS": {

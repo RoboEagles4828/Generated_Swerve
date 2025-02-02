@@ -62,9 +62,10 @@ class RobotContainer:
         self.drivetrain = TunerConstants.create_drivetrain()
         # Configure the button bindings
 
-        # self.autoChooser = AutoBuilder.buildAutoChooser("None")
-        # SmartDashboard.putData("AutoChooser",self.autoChooser)
         self.configureButtonBindings()
+
+        self.autoChooser = AutoBuilder.buildAutoChooser("None")
+        SmartDashboard.putData("AutoChooser",self.autoChooser)
 
 
     def configureButtonBindings(self) -> None:
@@ -137,9 +138,9 @@ class RobotContainer:
 
         :returns: the command to run in autonomous
         """
-        return commands2.cmd.print_("No autonomous command configured")
-        # auto = self.autoChooser.getSelected()
+        # return commands2.cmd.print_("No autonomous command configured")
+        auto = self.autoChooser.getSelected()
 
-        # return auto
+        return auto
         
 
